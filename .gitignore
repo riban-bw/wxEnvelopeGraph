@@ -1,3 +1,10 @@
+# Code::Blocks project
+*.depend
+*.layout
+obj/
+bin/
+*.exe
+
 # Prerequisites
 *.d
 
