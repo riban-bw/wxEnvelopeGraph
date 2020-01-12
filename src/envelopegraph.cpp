@@ -8,6 +8,7 @@ BEGIN_EVENT_TABLE(EnvelopeGraph, wxScrolledWindow)
     EVT_LEFT_DCLICK     (EnvelopeGraph::OnMouseLeftDClick)
     EVT_MOTION          (EnvelopeGraph::OnMotion)
     EVT_ENTER_WINDOW    (EnvelopeGraph::OnEnterWindow)
+    EVT_LEAVE_WINDOW    (EnvelopeGraph::OnExitWindow)
     EVT_SIZE            (EnvelopeGraph::OnSize)
     EVT_RIGHT_DOWN      (EnvelopeGraph::OnRightDown)
     EVT_RIGHT_UP        (EnvelopeGraph::OnRightUp)
@@ -23,11 +24,10 @@ EnvelopeGraph::EnvelopeGraph(wxWindow *parent)
     m_nNodeRadius = 5;
     m_nMaxNodes = 6;
     m_nDragNode = -1;
-    m_pParent = parent;
     m_colourLine = *wxGREEN;
     m_colourNode = *wxBLACK;
     SetScrollRate(SCROLL_RATE, SCROLL_RATE);
-    GetScrollPixelsPerUnit(&m_nPxScrollH, &m_nPxScrollV);
+    GetScrollPixelsPerUnit(&m_nPxScrollX, &m_nPxScrollY);
     m_pLabel = new wxStaticText(this, wxID_ANY, _(""), wxPoint(100,100));
     m_nMinimumY = 0;
     m_nMaximumY = 100;
@@ -37,6 +37,13 @@ EnvelopeGraph::EnvelopeGraph(wxWindow *parent)
 
 EnvelopeGraph::~EnvelopeGraph()
 {
+}
+
+void EnvelopeGraph::FitGraph()
+{
+    //Assumes vector always has at least one node
+    SetVirtualSize(GetNodeCentre(m_vNodes.back()).x, GetVirtualSize().GetY());
+    Refresh();
 }
 
 bool EnvelopeGraph::AddNode(wxPoint node, bool refresh)
@@ -67,6 +74,8 @@ bool EnvelopeGraph::RemoveNode(unsigned int index, bool refresh)
     if(index == 0 || index >= m_vNodes.size())
         return false;
     m_vNodes.erase(m_vNodes.begin() + index);
+    if(index == m_vNodes.size())
+        FitGraph();
     if(refresh)
         Refresh();
     return true;
@@ -110,37 +119,6 @@ bool EnvelopeGraph::IsPointInRegion(wxPoint point, wxPoint centre, unsigned int 
     return region.Contains(point);
 }
 
-void EnvelopeGraph::OnMouseLeftDown(wxMouseEvent &event)
-{
-    int nX, nY;
-    GetViewStart(&nX, &nY); //Scroll units
-    nX *= m_nPxScrollH; //Pixels
-    nY *= m_nPxScrollV; //Pixels
-    wxPoint pointViewStart(nX, nY);
-    for(unsigned int nNode = 0; nNode < m_vNodes.size(); ++nNode)
-    {
-        wxPoint ptNodeCentre(GetNodeCentre(m_vNodes[nNode]));
-        if(IsPointInRegion(event.GetPosition() + pointViewStart, ptNodeCentre, m_nNodeRadius))
-        {
-            if(nNode == 0)
-                return; //Don't select first or last node
-            m_nDragNode = nNode;
-            m_pointClickOffset = ptNodeCentre - event.GetPosition(); //Handle click offset from center of node
-            CaptureMouse(); //Handle mouse movement outside window
-            break;
-        }
-    }
-}
-
-void EnvelopeGraph::OnMouseLeftUp(wxMouseEvent &event)
-{
-    if(m_nDragNode == -1)
-        return;
-    m_nDragNode = -1;
-    ReleaseMouse();
-    Refresh();
-}
-
 wxPoint EnvelopeGraph::GetNodeCentre(wxPoint ptNode)
 {
     wxPoint ptCentre(ptNode.x * m_nScaleX, ptNode.y * m_nScaleY);
@@ -153,38 +131,124 @@ wxPoint EnvelopeGraph::GetNodeFromCentre(wxPoint ptPos)
     return ptNode;
 }
 
+void EnvelopeGraph::ScrollToNode(unsigned int nNode)
+{
+    if(nNode >= m_vNodes.size())
+        return;
+    int nViewStartX, nViewStartY, bViewWidth, nViewHeight;
+    wxPoint ptNode = m_vNodes[nNode];
+    GetViewStart(&nViewStartX, &nViewStartY); //scroll units
+    GetClientSize(&bViewWidth, &nViewHeight); //pixels
+    bViewWidth /= m_nPxScrollX; //scroll units
+    nViewHeight /= m_nPxScrollY; //scroll units
+    int nNodeX = ptNode.x * m_nScaleX / m_nPxScrollX;  // x positino of node in scroll units
+    int nNodeY = ptNode.y * m_nScaleY / m_nPxScrollY; //Y positino of node in scroll units
+    if(nNodeX > nViewStartX + bViewWidth)
+        nViewStartX = nNodeX - bViewWidth; //node is beyond RHS of view so set to RHS of view
+    else if(nNodeX < nViewStartX)
+        nViewStartX = nNodeX;
+    if(nNodeY > nViewStartY + nViewHeight)
+        nViewStartY = nNodeY - nViewHeight;
+    else if(nNodeY < nViewStartY)
+        nViewStartY = nNodeY;
+    else
+        return;
+    Scroll(nViewStartX, nViewStartY);
+    Refresh();
+}
+
+void EnvelopeGraph::OnMouseLeftDown(wxMouseEvent &event)
+{
+    int nX, nY;
+    GetViewStart(&nX, &nY); //Scroll units
+    nX *= m_nPxScrollX; //Pixels
+    nY *= m_nPxScrollY; //Pixels
+    wxPoint pointViewStart(nX, nY);
+    m_nLastXPos = event.GetPosition().x;
+    for(unsigned int nNode = 0; nNode < m_vNodes.size(); ++nNode)
+    {
+        wxPoint ptNodeCentre(GetNodeCentre(m_vNodes[nNode]));
+        if(IsPointInRegion(event.GetPosition() + pointViewStart, ptNodeCentre, m_nNodeRadius))
+        {
+            if(nNode == 0)
+                return; //Don't select first or last node
+            m_nDragNode = nNode;
+            m_ptClickOffset = ptNodeCentre - event.GetPosition(); //Handle click offset from center of node
+            CaptureMouse(); //Handle mouse movement outside window
+            break;
+        }
+    }
+}
+
+void EnvelopeGraph::OnMouseLeftUp(wxMouseEvent &event)
+{
+    if(m_nDragNode == -1)
+        return;
+    ReleaseMouse();
+    FitGraph();
+    int nViewStartX, nViewStartY, nViewWidth, nViewHeight;
+    GetViewStart(&nViewStartX, &nViewStartY);
+    GetClientSize(&nViewWidth, &nViewHeight);
+
+    if(event.GetPosition().x > nViewWidth)
+        nViewStartX = (GetNodeCentre(m_vNodes[m_nDragNode]).x - nViewWidth) / m_nPxScrollX + m_nPxScrollX;
+    else if(event.GetPosition().x < 0)
+        nViewStartX = (GetNodeCentre(m_vNodes[m_nDragNode]).x - nViewWidth) / m_nPxScrollX + m_nPxScrollX;
+    if(event.GetPosition().y > nViewHeight)
+        nViewStartY = (GetNodeCentre(m_vNodes[m_nDragNode]).y - nViewHeight) / m_nPxScrollY + m_nPxScrollY;
+    else if(event.GetPosition().y < 0)
+        nViewStartY = (GetNodeCentre(m_vNodes[m_nDragNode]).y - nViewHeight) / m_nPxScrollY + m_nPxScrollY;
+    Scroll(nViewStartX, nViewStartY);
+    m_nDragNode = -1;
+    Refresh();
+}
+
 void EnvelopeGraph::OnMotion(wxMouseEvent &event)
 {
-    //!@todo Reduce flicker on drag
+    //!@todo Dragging node beyond left hand neigbour when that neigbour is out of view breaks drag offset
+    //!@todo Dragging beyond Y coord does not add scrollbars
+    //!@todo Set limits of window / Y max
     if(m_nDragNode == -1)
         return;
 
     //event.GetPosition returns the mouse position within the viewable area, not within the virtual area
-    int nX, nY, nXsu, nYsu;
-    GetViewStart(&nXsu, &nYsu); //Scroll units
-    nX = m_nPxScrollH * nXsu; //Pixels
-    nY = m_nPxScrollV * nYsu; //Pixels
-    wxPoint pointViewStart(nX, nY);
+    int nViewStartX, nViewStartY;
+    GetViewStart(&nViewStartX, &nViewStartY); //Scroll units
+    nViewStartX *= m_nPxScrollX; //Pixels
+    nViewStartY *= m_nPxScrollY; //Pixels
 
     //Limit horizontal position to between previous and next nodes
-    if(event.GetPosition().x + nX >= GetNodeCentre(m_vNodes[m_nDragNode - 1]).x && (m_nDragNode == (int)m_vNodes.size() - 1 || event.GetPosition().x + nX <= GetNodeCentre(m_vNodes[m_nDragNode + 1]).x))
+    if(event.GetPosition().x + nViewStartX < GetNodeCentre(m_vNodes[m_nDragNode - 1]).x)
     {
-        wxSize sizeClient = GetClientSize();//Pixels
-        if(event.GetPosition().x > sizeClient.x - SCROLL_RATE * 2)
-        {
-            if(m_nDragNode == (int)m_vNodes.size() - 1)
-                SetVirtualSize(GetVirtualSize() + wxSize(SCROLL_RATE, 0));
-            Scroll(nXsu + 1, -1);
-            m_pointClickOffset.x += m_nPxScrollH;
-        }
-        else if(event.GetPosition().x < SCROLL_RATE * 2)
-        {
-            Scroll(nXsu - 1, -1);
-            m_pointClickOffset.x -= m_nPxScrollH;
-        }
-        //!@todo constrain x value
-        m_vNodes[m_nDragNode] = GetNodeFromCentre(event.GetPosition()  + m_pointClickOffset);
+        m_vNodes[m_nDragNode].x = m_vNodes[m_nDragNode - 1].x;
+        m_ptClickOffset = wxPoint(0,0);
     }
+    else if(m_nDragNode < (int)m_vNodes.size() - 1 && event.GetPosition().x + nViewStartX > GetNodeCentre(m_vNodes[m_nDragNode + 1]).x)
+    {
+        m_vNodes[m_nDragNode].x = m_vNodes[m_nDragNode + 1].x;
+        m_ptClickOffset = wxPoint(0,0);
+    }
+    else
+    {
+        m_vNodes[m_nDragNode].x = (GetNodeFromCentre(event.GetPosition() + m_ptClickOffset)).x;
+    }
+    if(event.GetPosition().y / m_nScaleY < m_nMinimumY)
+        m_vNodes[m_nDragNode].y = m_nMinimumY;
+    else if(event.GetPosition().y / m_nScaleY > m_nMaximumY)
+        m_vNodes[m_nDragNode].y = m_nMaximumY;
+    else
+        m_vNodes[m_nDragNode].y = (GetNodeFromCentre(event.GetPosition() + m_ptClickOffset)).y;
+
+    if(event.GetPosition().x > GetClientSize().x + nViewStartX)
+    {
+        FitGraph();
+    }
+    else if(event.GetPosition().x < 0)
+    {
+        FitGraph();
+    }
+
+    m_nLastXPos = event.GetPosition().x;
     Refresh();
 }
 
@@ -192,9 +256,9 @@ void EnvelopeGraph::OnMouseLeftDClick(wxMouseEvent &event)
 {
 //    m_pLabel->SetLabel(wxString::Format(_("DClick @ %d,%d"), event.GetPosition().x, event.GetPosition().y));
     //Try to delete existing node
-    int nX, nY;
-    GetViewStart(&nX, &nY);
-    wxPoint pointViewStart(nX * m_nPxScrollH, nY * m_nPxScrollV);
+    int nViewStartX, nViewStartY;
+    GetViewStart(&nViewStartX, &nViewStartY);
+    wxPoint pointViewStart(nViewStartX * m_nPxScrollX, nViewStartY * m_nPxScrollY);
     for(unsigned int nNode = 0; nNode < m_vNodes.size(); ++nNode)
     {
         if(IsPointInRegion(event.GetPosition() + pointViewStart, GetNodeCentre(m_vNodes[nNode]), m_nNodeRadius))
@@ -212,6 +276,14 @@ void EnvelopeGraph::OnEnterWindow(wxMouseEvent &event)
 {
     if(!event.LeftIsDown())
         m_nDragNode = -1;
+    m_ptExtOffset = wxPoint(0, 0);
+//    if(m_nDragNode == (int)m_vNodes.size() - 1)
+//        FitGraph();//!@todo This causes jump in position which may be undesitable
+}
+
+void EnvelopeGraph::OnExitWindow(wxMouseEvent &event)
+{
+        m_ptExtOffset = wxPoint(0, 0);
 }
 
 void EnvelopeGraph::OnSize(wxSizeEvent &event)
@@ -237,7 +309,7 @@ void EnvelopeGraph::OnRightUp(wxMouseEvent &event)
 {
     int nX, nY;
     GetViewStart(&nX, &nY);
-    wxPoint pointViewStart(nX * m_nPxScrollH, nY * m_nPxScrollV);
+    wxPoint pointViewStart(nX * m_nPxScrollX, nY * m_nPxScrollY);
     for(unsigned int nNode = 0; nNode < m_vNodes.size(); ++nNode)
     {
         if(IsPointInRegion(event.GetPosition() + pointViewStart, GetNodeCentre(m_vNodes[nNode]), m_nNodeRadius))

@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <wxsmith>
 	<object class="wxFrame" name="EnvelopeTestFrame">
+		<title>wxEnvelopeGraph Example</title>
 		<centered>1</centered>
+		<size>400,400</size>
 		<object class="wxFlexGridSizer" variable="FlexGridSizer1" member="no">
 			<cols>1</cols>
 			<growablecols>0</growablecols>
@@ -18,7 +20,7 @@
 			<object class="sizeritem">
 				<object class="Custom" name="ID_GRAPH" subclass="EnvelopeGraph" variable="m_pGraph" member="yes">
 					<creating_code>$(THIS) = new $(CLASS)($(PARENT));</creating_code>
-					<include_file>include/envelopegraph.h</include_file>
+					<include_file>envelopegraph.h</include_file>
 					<local_include>1</local_include>
 					<style></style>
 					<pos>144,240</pos>

@@ -49,6 +49,7 @@ class EnvelopeGraph: public wxScrolledWindow
         void OnMotion(wxMouseEvent &event); //Handle mouse movement
         void OnMouseLeftDClick(wxMouseEvent &event); //Handle left mouse button double click
         void OnEnterWindow(wxMouseEvent &event); //Handle mouse entering window
+        void OnExitWindow(wxMouseEvent &event); //Handle mouse exiting window
         void OnSize(wxSizeEvent &event); //Handle window resizing
         void OnRightDown(wxMouseEvent &event); //Handle right mosue button press
         void OnRightUp(wxMouseEvent &event); //Handle right mosue button release
@@ -56,13 +57,16 @@ class EnvelopeGraph: public wxScrolledWindow
         bool IsPointInRegion(wxPoint point, wxPoint centre, unsigned int radius); //True if point is within radius of centre (actually square)
         wxPoint GetNodeCentre(wxPoint ptNode); //Get the location of a node in the display
         wxPoint GetNodeFromCentre(wxPoint ptPos); //Get the node value from its location in the display
+        void FitGraph(); //Adjust window virtual size to fit graph
+        void ScrollToNode(unsigned int nNode); //Scroll window to ensure node is in view
         unsigned int m_nMaxNodes; //Maximum quantity of nodes
         unsigned int m_nNodeRadius; //Radius of node
         int m_nScaleX; //Scale factor of display to X data value
         int m_nScaleY; //Scale factor of display to Y data value
-        int m_nPxScrollH; //Quantity of pixesl per scroll unit horizontal
-        int m_nPxScrollV; //Quantity of pixesl per scroll unit vertical
+        int m_nPxScrollX; //Quantity of pixesl per scroll unit horizontal
+        int m_nPxScrollY; //Quantity of pixesl per scroll unit vertical
         int m_nDragNode; //Index of node being dragged. -1 for none
+        int m_nLastXPos; //Position of mouse on last motion call
 
         int m_nMinimumY; //Minimum Y value for a node
         int m_nMaximumY; //Maximum Y value for a node
@@ -72,7 +76,8 @@ class EnvelopeGraph: public wxScrolledWindow
         wxRegion* m_pRegionDrag; //Region for permissible drag (window minus diameter of nodes
         wxColour m_colourLine; //Colour of graph lines
         wxColour m_colourNode; //Colour of graph nodes
-        wxPoint m_pointClickOffset; //Offset of left click from center of selected node
+        wxPoint m_ptClickOffset; //Offset of left click from center of selected node
+        wxPoint m_ptExtOffset; // X offset whilst outside window
         vector<wxPoint> m_vNodes; //Table of nodes
 
         wxStaticText* m_pLabel;

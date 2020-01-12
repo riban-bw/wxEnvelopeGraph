@@ -21,7 +21,7 @@
 					<Add directory="$(#wx)/lib/gcc_dll/mswud" />
 				</ResourceCompiler>
 				<Linker>
-					<Add library="libwxmsw28ud.a" />
+					<Add library="libwxmsw31ud.a" />
 					<Add directory="$(#wx)/lib/gcc_dll" />
 				</Linker>
 			</Target>
@@ -40,7 +40,7 @@
 				</ResourceCompiler>
 				<Linker>
 					<Add option="-s" />
-					<Add library="libwxmsw28u.a" />
+					<Add library="libwxmsw31u.a" />
 					<Add directory="$(#wx)/lib/gcc_dll" />
 				</Linker>
 			</Target>
@@ -74,9 +74,6 @@
 		</Unit>
 		<Unit filename="wxsmith/EnvelopeTestframe.wxs" />
 		<Extensions>
-			<code_completion />
-			<envvars />
-			<debugger />
 			<wxsmith version="1">
 				<gui name="wxWidgets" src="EnvelopeTestApp.cpp" main="EnvelopeTestFrame" init_handlers="necessary" language="CPP" />
 				<resources>

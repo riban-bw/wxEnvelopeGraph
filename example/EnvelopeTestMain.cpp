@@ -64,7 +64,8 @@ EnvelopeTestFrame::EnvelopeTestFrame(wxWindow* parent,wxWindowID id)
     wxMenuItem* MenuItem1;
     wxMenuItem* MenuItem2;
 
-    Create(parent, id, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE, _T("id"));
+    Create(parent, id, _("wxEnvelopeGraph Example"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE, _T("id"));
+    SetClientSize(wxSize(400,400));
     FlexGridSizer1 = new wxFlexGridSizer(0, 1, 0, 0);
     FlexGridSizer1->AddGrowableCol(0);
     FlexGridSizer1->AddGrowableRow(1);
@@ -89,8 +90,8 @@ EnvelopeTestFrame::EnvelopeTestFrame(wxWindow* parent,wxWindowID id)
     StatusBar1->SetFieldsCount(1,__wxStatusBarWidths_1);
     StatusBar1->SetStatusStyles(1,__wxStatusBarStyles_1);
     SetStatusBar(StatusBar1);
-    FlexGridSizer1->Fit(this);
-    FlexGridSizer1->SetSizeHints(this);
+    SetSizer(FlexGridSizer1);
+    Layout();
     Center();
 
     Connect(ID_BUTTON1,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&EnvelopeTestFrame::OnButton);
@@ -104,7 +105,6 @@ EnvelopeTestFrame::EnvelopeTestFrame(wxWindow* parent,wxWindowID id)
 //    m_pGraph->AddNode(wxPoint(120,70));
 //    m_pGraph->AddNode(wxPoint(10,90));
 //    m_pGraph->AddNode(wxPoint(50,30));
-    Maximize();
 }
 
 EnvelopeTestFrame::~EnvelopeTestFrame()
