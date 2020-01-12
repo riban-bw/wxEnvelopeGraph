@@ -1,4 +1,4 @@
-# wxEnnvelopeGraph
+# wxEnvelopeGraph
 A wxWidget control that displays draggable nodes connected by straight lines on a scrollable window
 
 This wxWidget control extends wxScrolledWindow to provide a window that may be scrolled, resized, etc. A user may double click to add or remove nodes upto a defined maximum and drag nodes to reposition them. Each node is constrained by its neigbours, i.e. it may not be dragged horizonrally beyond its neigbouring nodes. Nodes may be added or removed programatically.
