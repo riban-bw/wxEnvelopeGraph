@@ -41,6 +41,47 @@ class EnvelopeGraph: public wxScrolledWindow
         */
         void Clear(bool refresh = true);
 
+        /** @brief  Get the quantity of nodes in graph
+        *   @retval unsigned int Quantity of nodes
+        */
+        unsigned int GetNodeCount();
+
+        /** @brief  Set the maximum quantity of nodes
+        *   @param  maxNodes Maximum quantity of nodes
+        */
+        void SetMaxNodes(unsigned int maxNodes);
+
+        /** @brief  Get the maximum quantity of nodes
+        *   @retval unsigned int Maximum quantity of nodes
+        */
+        unsigned int GetMaxNodes();
+
+        /** @brief  Enable or disable ability to add nodes
+        *   @param  enable [Default: true]
+        */
+        void AllowAddNodes(bool enable = true);
+
+        /** @brief  Enable or disable ability to remove node
+        *   @param  enable [Default: true]
+        *   @param  node Pointer to the node to control {Default: NODES_ALL_NODES]
+        */
+        void AllowRemoveNode(bool enable, wxPoint Node);
+
+        /** @brief  Get maximum height
+        *   @retval int Maximum height
+        */
+        int GetMaxHeight();
+
+        /** @brief  Set maximum height
+        *   @param  maxHeight Maximum height
+        */
+        void SetMaxHeight(int maxHeight);
+
+        /** @brief  Set the vertical position of node zero
+        *   @param  y Y position of node zero
+        */
+        void SetOrigin(int y);
+
     private:
         void DrawGraph(wxDC& dc); //Draws the lines and nodes
         void OnPaint(wxPaintEvent &event); //Handle paint event
@@ -59,6 +100,8 @@ class EnvelopeGraph: public wxScrolledWindow
         wxPoint GetNodeFromCentre(wxPoint ptPos); //Get the node value from its location in the display
         void FitGraph(); //Adjust window virtual size to fit graph
         void ScrollToNode(unsigned int nNode); //Scroll window to ensure node is in view
+
+        bool m_bAllowAddNodes = true; // True to allow adding nodes by double clicking
         unsigned int m_nMaxNodes; //Maximum quantity of nodes
         unsigned int m_nNodeRadius; //Radius of node
         int m_nScaleX; //Scale factor of display to X data value
@@ -67,6 +110,7 @@ class EnvelopeGraph: public wxScrolledWindow
         int m_nPxScrollY; //Quantity of pixesl per scroll unit vertical
         int m_nDragNode; //Index of node being dragged. -1 for none
         int m_nLastXPos; //Position of mouse on last motion call
+        int m_nLastYPos; //Position of mouse on last motion call
 
         int m_nMinimumY; //Minimum Y value for a node
         int m_nMaximumY; //Maximum Y value for a node

@@ -30,7 +30,7 @@ EnvelopeGraph::EnvelopeGraph(wxWindow *parent)
     GetScrollPixelsPerUnit(&m_nPxScrollX, &m_nPxScrollY);
     m_pLabel = new wxStaticText(this, wxID_ANY, _(""), wxPoint(100,100));
     m_nMinimumY = 0;
-    m_nMaximumY = 100;
+    m_nMaximumY = 1000;
     m_ptOrigin = wxPoint(0,0); //!@todo convert to node value rather than coord
     Clear();
 }
@@ -42,7 +42,7 @@ EnvelopeGraph::~EnvelopeGraph()
 void EnvelopeGraph::FitGraph()
 {
     //Assumes vector always has at least one node
-    SetVirtualSize(GetNodeCentre(m_vNodes.back()).x, GetVirtualSize().GetY());
+    SetVirtualSize(GetNodeCentre(m_vNodes.back()).x, GetNodeCentre(m_vNodes.back()).y);
     Refresh();
 }
 
@@ -87,6 +87,27 @@ void EnvelopeGraph::Clear(bool refresh)
     m_vNodes.push_back(m_ptOrigin);
     if(refresh)
         Refresh();
+}
+
+unsigned int EnvelopeGraph::GetNodeCount()
+{
+    return m_vNodes.size();
+}
+
+void EnvelopeGraph::SetMaxNodes(unsigned int maxNodes)
+{
+    if(maxNodes < 1)
+        maxNodes = 1;
+    if(maxNodes < m_vNodes.size())
+        for(unsigned int nNode = m_vNodes.size(); nNode >= maxNodes; --nNode)
+            RemoveNode(nNode, false);
+    m_nMaxNodes = maxNodes;
+    Refresh();
+}
+
+unsigned int EnvelopeGraph::GetMaxNodes()
+{
+    return m_nMaxNodes;
 }
 
 void EnvelopeGraph::DrawGraph(wxDC& dc)
@@ -165,6 +186,7 @@ void EnvelopeGraph::OnMouseLeftDown(wxMouseEvent &event)
     nY *= m_nPxScrollY; //Pixels
     wxPoint pointViewStart(nX, nY);
     m_nLastXPos = event.GetPosition().x;
+    m_nLastYPos = event.GetPosition().y;
     for(unsigned int nNode = 0; nNode < m_vNodes.size(); ++nNode)
     {
         wxPoint ptNodeCentre(GetNodeCentre(m_vNodes[nNode]));
@@ -198,7 +220,7 @@ void EnvelopeGraph::OnMouseLeftUp(wxMouseEvent &event)
         nViewStartY = (GetNodeCentre(m_vNodes[m_nDragNode]).y - nViewHeight) / m_nPxScrollY + m_nPxScrollY;
     else if(event.GetPosition().y < 0)
         nViewStartY = (GetNodeCentre(m_vNodes[m_nDragNode]).y - nViewHeight) / m_nPxScrollY + m_nPxScrollY;
-    Scroll(nViewStartX, nViewStartY);
+//    Scroll(nViewStartX, nViewStartY);
     m_nDragNode = -1;
     Refresh();
 }
@@ -232,13 +254,17 @@ void EnvelopeGraph::OnMotion(wxMouseEvent &event)
     {
         m_vNodes[m_nDragNode].x = (GetNodeFromCentre(event.GetPosition() + m_ptClickOffset)).x;
     }
-    if(event.GetPosition().y / m_nScaleY < m_nMinimumY)
-        m_vNodes[m_nDragNode].y = m_nMinimumY;
-    else if(event.GetPosition().y / m_nScaleY > m_nMaximumY)
-        m_vNodes[m_nDragNode].y = m_nMaximumY;
+    if(event.ShiftDown())
+        m_vNodes[m_nDragNode].y = m_vNodes[m_nDragNode - 1].y;
     else
-        m_vNodes[m_nDragNode].y = (GetNodeFromCentre(event.GetPosition() + m_ptClickOffset)).y;
-
+    {
+        if(event.GetPosition().y / m_nScaleY < m_nMinimumY)
+            m_vNodes[m_nDragNode].y = m_nMinimumY;
+        else if(event.GetPosition().y / m_nScaleY > m_nMaximumY)
+            m_vNodes[m_nDragNode].y = m_nMaximumY;
+        else
+            m_vNodes[m_nDragNode].y = (GetNodeFromCentre(event.GetPosition() + m_ptClickOffset)).y;
+    }
     if(event.GetPosition().x > GetClientSize().x + nViewStartX)
     {
         FitGraph();
@@ -247,8 +273,13 @@ void EnvelopeGraph::OnMotion(wxMouseEvent &event)
     {
         FitGraph();
     }
+    if(event.GetPosition().y > GetClientSize().y + nViewStartY)
+        FitGraph();
+    else if(event.GetPosition().y < 0)
+        FitGraph();
 
     m_nLastXPos = event.GetPosition().x;
+    m_nLastYPos = event.GetPosition().y;
     Refresh();
 }
 
@@ -268,7 +299,7 @@ void EnvelopeGraph::OnMouseLeftDClick(wxMouseEvent &event)
         }
     }
     //Got here so add a node
-    if(m_nMaxNodes > m_vNodes.size())
+    if(m_bAllowAddNodes && m_nMaxNodes > m_vNodes.size())
         AddNode(GetNodeFromCentre(event.GetPosition() + pointViewStart));
 }
 
@@ -323,4 +354,31 @@ void EnvelopeGraph::OnRightUp(wxMouseEvent &event)
 void EnvelopeGraph::OnRightDClick(wxMouseEvent &event)
 {
     Clear();
+}
+
+void EnvelopeGraph::AllowAddNodes(bool enable)
+{
+    m_bAllowAddNodes = enable;
+}
+
+void EnvelopeGraph::AllowRemoveNode(bool enable, wxPoint Node)
+{
+
+}
+
+int EnvelopeGraph::GetMaxHeight()
+{
+    return m_nMaximumY;
+}
+
+void EnvelopeGraph::SetMaxHeight(int maxHeight)
+{
+    m_nMaximumY = maxHeight;
+    Refresh();
+}
+
+void EnvelopeGraph::SetOrigin(int y)
+{
+    m_vNodes[0].y = y;
+    Refresh();
 }

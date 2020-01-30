@@ -42,7 +42,13 @@ wxString wxbuildinfo(wxbuildinfoformat format)
 }
 
 //(*IdInit(EnvelopeTestFrame)
+const long EnvelopeTestFrame::ID_CHECKBOX1 = wxNewId();
+const long EnvelopeTestFrame::ID_STATICTEXT1 = wxNewId();
+const long EnvelopeTestFrame::ID_SPINCTRL1 = wxNewId();
+const long EnvelopeTestFrame::ID_STATICTEXT2 = wxNewId();
+const long EnvelopeTestFrame::ID_SPINCTRL2 = wxNewId();
 const long EnvelopeTestFrame::ID_BUTTON1 = wxNewId();
+const long EnvelopeTestFrame::ID_SLIDER1 = wxNewId();
 const long EnvelopeTestFrame::ID_GRAPH = wxNewId();
 const long EnvelopeTestFrame::idMenuQuit = wxNewId();
 const long EnvelopeTestFrame::idMenuAbout = wxNewId();
@@ -58,6 +64,8 @@ EnvelopeTestFrame::EnvelopeTestFrame(wxWindow* parent,wxWindowID id)
 {
     //(*Initialize(EnvelopeTestFrame)
     wxFlexGridSizer* FlexGridSizer1;
+    wxFlexGridSizer* FlexGridSizer2;
+    wxFlexGridSizer* FlexGridSizer3;
     wxMenu* Menu1;
     wxMenu* Menu2;
     wxMenuBar* MenuBar1;
@@ -65,14 +73,35 @@ EnvelopeTestFrame::EnvelopeTestFrame(wxWindow* parent,wxWindowID id)
     wxMenuItem* MenuItem2;
 
     Create(parent, id, _("wxEnvelopeGraph Example"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE, _T("id"));
-    SetClientSize(wxSize(400,400));
+    SetClientSize(wxSize(600,400));
     FlexGridSizer1 = new wxFlexGridSizer(0, 1, 0, 0);
     FlexGridSizer1->AddGrowableCol(0);
     FlexGridSizer1->AddGrowableRow(1);
-    Button1 = new wxButton(this, ID_BUTTON1, _("Label"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON1"));
-    FlexGridSizer1->Add(Button1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    FlexGridSizer2 = new wxFlexGridSizer(0, 0, 0, 0);
+    m_pCmbAllowAdd = new wxCheckBox(this, ID_CHECKBOX1, _("Allow add node"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_CHECKBOX1"));
+    m_pCmbAllowAdd->SetValue(true);
+    FlexGridSizer2->Add(m_pCmbAllowAdd, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    StaticText1 = new wxStaticText(this, ID_STATICTEXT1, _("Max nodes"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT, _T("ID_STATICTEXT1"));
+    FlexGridSizer2->Add(StaticText1, 1, wxALL|wxALIGN_CENTER_VERTICAL, 5);
+    m_pSpnMaxNodes = new wxSpinCtrl(this, ID_SPINCTRL1, _T("6"), wxDefaultPosition, wxDefaultSize, 0, 0, 10, 6, _T("ID_SPINCTRL1"));
+    m_pSpnMaxNodes->SetValue(_T("6"));
+    FlexGridSizer2->Add(m_pSpnMaxNodes, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    StaticText2 = new wxStaticText(this, ID_STATICTEXT2, _("Max height"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT, _T("ID_STATICTEXT2"));
+    FlexGridSizer2->Add(StaticText2, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    m_pSpnMaxHeight = new wxSpinCtrl(this, ID_SPINCTRL2, _T("100"), wxDefaultPosition, wxDefaultSize, 0, 0, 4096, 100, _T("ID_SPINCTRL2"));
+    m_pSpnMaxHeight->SetValue(_T("100"));
+    FlexGridSizer2->Add(m_pSpnMaxHeight, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    Button1 = new wxButton(this, ID_BUTTON1, _("Info"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON1"));
+    FlexGridSizer2->Add(Button1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    FlexGridSizer1->Add(FlexGridSizer2, 1, wxALL|wxEXPAND, 5);
+    FlexGridSizer3 = new wxFlexGridSizer(0, 0, 0, 0);
+    FlexGridSizer3->AddGrowableCol(1);
+    FlexGridSizer3->AddGrowableRow(0);
+    Slider1 = new wxSlider(this, ID_SLIDER1, 0, 0, 100, wxDefaultPosition, wxDefaultSize, wxSL_VERTICAL, wxDefaultValidator, _T("ID_SLIDER1"));
+    FlexGridSizer3->Add(Slider1, 1, wxALL|wxEXPAND, 5);
     m_pGraph = new EnvelopeGraph(this);
-    FlexGridSizer1->Add(m_pGraph, 1, wxALL|wxEXPAND, 5);
+    FlexGridSizer3->Add(m_pGraph, 1, wxALL|wxEXPAND, 5);
+    FlexGridSizer1->Add(FlexGridSizer3, 1, wxALL|wxEXPAND, 5);
     SetSizer(FlexGridSizer1);
     MenuBar1 = new wxMenuBar();
     Menu1 = new wxMenu();
@@ -94,17 +123,17 @@ EnvelopeTestFrame::EnvelopeTestFrame(wxWindow* parent,wxWindowID id)
     Layout();
     Center();
 
+    Connect(ID_CHECKBOX1,wxEVT_COMMAND_CHECKBOX_CLICKED,(wxObjectEventFunction)&EnvelopeTestFrame::Onm_pCmbAllowAddClick);
+    Connect(ID_SPINCTRL1,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&EnvelopeTestFrame::Onm_pSpnMaxNodesChange);
+    Connect(ID_SPINCTRL2,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&EnvelopeTestFrame::Onm_pSpnMaxHeightChange);
     Connect(ID_BUTTON1,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&EnvelopeTestFrame::OnButton);
+    Connect(ID_SLIDER1,wxEVT_SCROLL_CHANGED,(wxObjectEventFunction)&EnvelopeTestFrame::OnSlider1CmdScrollChanged);
     Connect(idMenuQuit,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&EnvelopeTestFrame::OnQuit);
     Connect(idMenuAbout,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&EnvelopeTestFrame::OnAbout);
     //*)
-//    m_pGraph->AddNode(wxPoint(0,0));
-//    m_pGraph->AddNode(wxPoint(100,0));
-//    m_pGraph->AddNode(wxPoint(50,50));
+    m_pSpnMaxHeight->SetValue(m_pGraph->GetMaxHeight());
     m_pGraph->AddNode(wxPoint(200,30));
-//    m_pGraph->AddNode(wxPoint(120,70));
-//    m_pGraph->AddNode(wxPoint(10,90));
-//    m_pGraph->AddNode(wxPoint(50,30));
+
 }
 
 EnvelopeTestFrame::~EnvelopeTestFrame()
@@ -126,5 +155,29 @@ void EnvelopeTestFrame::OnAbout(wxCommandEvent& event)
 
 void EnvelopeTestFrame::OnButton(wxCommandEvent& event)
 {
-    wxMessageBox(_("Hello"));
+    wxString sMessage = wxString::Format("Node count: %d\nMaximum nodes: %d", m_pGraph->GetNodeCount(),
+                                         m_pGraph->GetMaxNodes());
+    wxMessageBox(sMessage);
+
+}
+
+void EnvelopeTestFrame::Onm_pCmbAllowAddClick(wxCommandEvent& event)
+{
+    m_pGraph->AllowAddNodes(event.IsChecked());
+}
+
+void EnvelopeTestFrame::Onm_pSpnMaxNodesChange(wxSpinEvent& event)
+{
+    m_pGraph->SetMaxNodes(event.GetValue() + 1);
+}
+
+void EnvelopeTestFrame::Onm_pSpnMaxHeightChange(wxSpinEvent& event)
+{
+    m_pGraph->SetMaxHeight(event.GetValue());
+}
+
+void EnvelopeTestFrame::OnSlider1CmdScrollChanged(wxScrollEvent& event)
+{
+    m_pGraph->SetOrigin(event.GetPosition() * m_pGraph->GetMaxHeight() / 200);
+    m_pGraph->Refresh();
 }

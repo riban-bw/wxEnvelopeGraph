@@ -3,27 +3,99 @@
 	<object class="wxFrame" name="EnvelopeTestFrame">
 		<title>wxEnvelopeGraph Example</title>
 		<centered>1</centered>
-		<size>400,400</size>
+		<size>600,400</size>
 		<object class="wxFlexGridSizer" variable="FlexGridSizer1" member="no">
 			<cols>1</cols>
 			<growablecols>0</growablecols>
 			<growablerows>1</growablerows>
 			<object class="sizeritem">
-				<object class="wxButton" name="ID_BUTTON1" variable="Button1" member="yes">
-					<label>Label</label>
-					<handler function="OnButton" entry="EVT_BUTTON" />
+				<object class="wxFlexGridSizer" variable="FlexGridSizer2" member="no">
+					<object class="sizeritem">
+						<object class="wxCheckBox" name="ID_CHECKBOX1" variable="m_pCmbAllowAdd" member="yes">
+							<label>Allow add node</label>
+							<checked>1</checked>
+							<handler function="Onm_pCmbAllowAddClick" entry="EVT_CHECKBOX" />
+						</object>
+						<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+						<border>5</border>
+						<option>1</option>
+					</object>
+					<object class="sizeritem">
+						<object class="wxStaticText" name="ID_STATICTEXT1" variable="StaticText1" member="yes">
+							<label>Max nodes</label>
+							<style>wxALIGN_RIGHT</style>
+						</object>
+						<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+						<border>5</border>
+						<option>1</option>
+					</object>
+					<object class="sizeritem">
+						<object class="wxSpinCtrl" name="ID_SPINCTRL1" variable="m_pSpnMaxNodes" member="yes">
+							<value>6</value>
+							<max>10</max>
+							<handler function="Onm_pSpnMaxNodesChange" entry="EVT_SPINCTRL" />
+						</object>
+						<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+						<border>5</border>
+						<option>1</option>
+					</object>
+					<object class="sizeritem">
+						<object class="wxStaticText" name="ID_STATICTEXT2" variable="StaticText2" member="yes">
+							<label>Max height</label>
+							<style>wxALIGN_RIGHT</style>
+						</object>
+						<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+						<border>5</border>
+						<option>1</option>
+					</object>
+					<object class="sizeritem">
+						<object class="wxSpinCtrl" name="ID_SPINCTRL2" variable="m_pSpnMaxHeight" member="yes">
+							<value>100</value>
+							<max>4096</max>
+							<handler function="Onm_pSpnMaxHeightChange" entry="EVT_SPINCTRL" />
+						</object>
+						<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+						<border>5</border>
+						<option>1</option>
+					</object>
+					<object class="sizeritem">
+						<object class="wxButton" name="ID_BUTTON1" variable="Button1" member="yes">
+							<label>Info</label>
+							<handler function="OnButton" entry="EVT_BUTTON" />
+						</object>
+						<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+						<border>5</border>
+						<option>1</option>
+					</object>
 				</object>
-				<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+				<flag>wxALL|wxEXPAND</flag>
 				<border>5</border>
 				<option>1</option>
 			</object>
 			<object class="sizeritem">
-				<object class="Custom" name="ID_GRAPH" subclass="EnvelopeGraph" variable="m_pGraph" member="yes">
-					<creating_code>$(THIS) = new $(CLASS)($(PARENT));</creating_code>
-					<include_file>envelopegraph.h</include_file>
-					<local_include>1</local_include>
-					<style></style>
-					<pos>144,240</pos>
+				<object class="wxFlexGridSizer" variable="FlexGridSizer3" member="no">
+					<growablecols>1</growablecols>
+					<growablerows>0</growablerows>
+					<object class="sizeritem">
+						<object class="wxSlider" name="ID_SLIDER1" variable="Slider1" member="yes">
+							<style>wxSL_VERTICAL</style>
+							<handler function="OnSlider1CmdScrollChanged" entry="EVT_COMMAND_SCROLL_CHANGED" />
+						</object>
+						<flag>wxALL|wxEXPAND</flag>
+						<border>5</border>
+						<option>1</option>
+					</object>
+					<object class="sizeritem">
+						<object class="Custom" name="ID_GRAPH" subclass="EnvelopeGraph" variable="m_pGraph" member="yes">
+							<creating_code>$(THIS) = new $(CLASS)($(PARENT));</creating_code>
+							<include_file>envelopegraph.h</include_file>
+							<local_include>1</local_include>
+							<style></style>
+						</object>
+						<flag>wxALL|wxEXPAND</flag>
+						<border>5</border>
+						<option>1</option>
+					</object>
 				</object>
 				<flag>wxALL|wxEXPAND</flag>
 				<border>5</border>
