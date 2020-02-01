@@ -1,3 +1,12 @@
+/***************************************************************
+ * Name:      envelopegraph.cpp
+ * Purpose:   Implements EnvelopeGraph class
+ * Author:    Brian Walton (brian@riban.co.uk)
+ * Created:   2018-08-22
+ * Copyright: Brian Walton (riban.co.uk)
+ * License:   GPL3
+ **************************************************************/
+
 #include "envelopegraph.h"
 
 //wxWidgets Event table
@@ -16,8 +25,8 @@ BEGIN_EVENT_TABLE(EnvelopeGraph, wxScrolledWindow)
 END_EVENT_TABLE()
 
 EnvelopeGraph::EnvelopeGraph(wxWindow *parent)
-: wxScrolledWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                   wxHSCROLL | wxVSCROLL | wxNO_FULL_REPAINT_ON_RESIZE)
+    : wxScrolledWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                       wxHSCROLL | wxVSCROLL | wxNO_FULL_REPAINT_ON_RESIZE)
 {
     m_nScaleX = 1;
     m_nScaleY = 1;
@@ -314,7 +323,7 @@ void EnvelopeGraph::OnEnterWindow(wxMouseEvent &event)
 
 void EnvelopeGraph::OnExitWindow(wxMouseEvent &event)
 {
-        m_ptExtOffset = wxPoint(0, 0);
+    m_ptExtOffset = wxPoint(0, 0);
 }
 
 void EnvelopeGraph::OnSize(wxSizeEvent &event)
