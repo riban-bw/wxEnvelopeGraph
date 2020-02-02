@@ -24,9 +24,15 @@ BEGIN_EVENT_TABLE(EnvelopeGraph, wxScrolledWindow)
     EVT_RIGHT_DCLICK    (EnvelopeGraph::OnRightDClick)
 END_EVENT_TABLE()
 
-EnvelopeGraph::EnvelopeGraph(wxWindow *parent)
-    : wxScrolledWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                       wxHSCROLL | wxVSCROLL | wxNO_FULL_REPAINT_ON_RESIZE)
+wxDEFINE_EVENT(ENVELOPEGRAPH_EVENT, wxCommandEvent);
+
+EnvelopeGraph::EnvelopeGraph(wxWindow *parent,
+                    wxWindowID winid,
+                    const wxPoint& pos,
+                    const wxSize& size,
+                    long style,
+                    const wxString& name)
+    : wxScrolledWindow(parent, winid, pos, size, style, name)
 {
     m_nScaleX = 1;
     m_nScaleY = 1;
@@ -51,7 +57,7 @@ EnvelopeGraph::~EnvelopeGraph()
 void EnvelopeGraph::FitGraph()
 {
     //Assumes vector always has at least one node
-    SetVirtualSize(GetNodeCentre(m_vNodes.back()).x, GetNodeCentre(m_vNodes.back()).y);
+    SetVirtualSize(GetNodeCentre(m_vNodes.back()).x, GetNodeCentre(m_vNodes.back()).y); //!@todo FigGraph assumes last node is at extent of y axis
     Refresh();
 }
 
@@ -232,11 +238,19 @@ void EnvelopeGraph::OnMouseLeftUp(wxMouseEvent &event)
 //    Scroll(nViewStartX, nViewStartY);
     m_nDragNode = -1;
     Refresh();
+    SendEvent();
+}
+
+void EnvelopeGraph::SendEvent()
+{
+    wxCommandEvent event(ENVELOPEGRAPH_EVENT, GetId());
+    event.SetEventObject(this);
+    ProcessWindowEvent(event);
 }
 
 void EnvelopeGraph::OnMotion(wxMouseEvent &event)
 {
-    //!@todo Dragging node beyond left hand neigbour when that neigbour is out of view breaks drag offset
+    //!@todo Dragging node beyond left hand neighbour when that neighbour is out of view breaks drag offset
     //!@todo Dragging beyond Y coord does not add scrollbars
     //!@todo Set limits of window / Y max
     if(m_nDragNode == -1)
@@ -388,6 +402,21 @@ void EnvelopeGraph::SetMaxHeight(int maxHeight)
 
 void EnvelopeGraph::SetOrigin(int y)
 {
-    m_vNodes[0].y = y;
+    m_ptOrigin.y = y;
+    if(m_vNodes.size())
+        m_vNodes[0].y = y;
     Refresh();
+}
+
+void EnvelopeGraph::SetNode(unsigned int nNode, wxPoint ptPosition)
+{
+    if(nNode < m_vNodes.size())
+        m_vNodes[nNode] = ptPosition; //!@todo validate range and refresh
+}
+
+wxPoint EnvelopeGraph::GetNode(unsigned int nNode)
+{
+    if(nNode < m_vNodes.size())
+        return m_vNodes[nNode];
+    return wxPoint(0,0);
 }

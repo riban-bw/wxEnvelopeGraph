@@ -16,6 +16,8 @@
 
 using std::vector;
 
+wxDECLARE_EVENT(ENVELOPEGRAPH_EVENT, wxCommandEvent);
+
 /** Implements a graphical component that provides dragable nodes joining straight lines */
 class EnvelopeGraph: public wxScrolledWindow
 {
@@ -23,7 +25,13 @@ public:
     /** @brief  Construct an envelope graph object
         @param  parent Pointer to the parent window
     */
-    EnvelopeGraph(wxWindow* parent);
+    EnvelopeGraph(wxWindow *parent,
+                wxWindowID winid = wxID_ANY,
+                const wxPoint& pos = wxDefaultPosition,
+                const wxSize& size = wxDefaultSize,
+                long style = wxHSCROLL | wxVSCROLL | wxNO_FULL_REPAINT_ON_RESIZE,
+                const wxString& name = wxPanelNameStr);
+
 
     /** @brief  Destruct envelope graph object */
     ~EnvelopeGraph();
@@ -91,6 +99,18 @@ public:
     */
     void SetOrigin(int y);
 
+    /** @brief  Set position of node
+    *   @param  nNode Index of node
+    *   @param  wxPoint Position to move node
+    */
+    void SetNode(unsigned int nNode, wxPoint ptPosition);
+
+    /** @brief  Get position of node
+    *   @param  nNode Index of node
+    *   @retval wxPoint Position of node
+    */
+    wxPoint GetNode(unsigned int nNode);
+
 private:
     void DrawGraph(wxDC& dc); //Draws the lines and nodes
     void OnPaint(wxPaintEvent &event); //Handle paint event
@@ -109,6 +129,7 @@ private:
     wxPoint GetNodeFromCentre(wxPoint ptPos); //Get the node value from its location in the display
     void FitGraph(); //Adjust window virtual size to fit graph
     void ScrollToNode(unsigned int nNode); //Scroll window to ensure node is in view
+    void SendEvent(); //Send an event indicating graph has changed
 
     bool m_bAllowAddNodes = true; // True to allow adding nodes by double clicking
     unsigned int m_nMaxNodes; //Maximum quantity of nodes
