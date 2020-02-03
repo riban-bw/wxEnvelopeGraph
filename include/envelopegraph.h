@@ -13,6 +13,8 @@
 #include <vector>
 
 #define SCROLL_RATE 10
+#define ID_CONTEXT_SUSTAIN 2001
+#define ID_CONTEXT_END 2002
 
 using std::vector;
 
@@ -36,14 +38,20 @@ public:
     /** @brief  Destruct envelope graph object */
     ~EnvelopeGraph();
 
+    /** @brief  Controls if events are sent
+    *   @param  bInhibit True to inhibit events [Default: true]
+    *   @note   Use to avoid events, e.g. whilst setting values from configuration
+    */
+    void InhibitUpdates(bool bInhibit = true);
+
     /** @brief  Add a node to the graph
         @param  node wxPoint representing position of node relative to top left of control
         @param  refresh Set true to refresh display after adding node (Default: true)
-        @retval bool True on success
+        @retval int Index of new node or -1 on failure
         @note   Cannot exceed maximum nodes
         @note   Node is inserted at horizontal position
     */
-    bool AddNode(wxPoint node, bool refresh = true);
+    int AddNode(wxPoint node, bool refresh = true);
 
     /** @brief  Remove a node from the graph
     *   @param  index Index of the node to remove
@@ -111,6 +119,16 @@ public:
     */
     wxPoint GetNode(unsigned int nNode);
 
+    /** @brief  Set sustain node
+    *   @param  nNode Index of sustain node - set to -1 to clear
+    */
+    void SetSustain(int nNode);
+
+    /** @brief  Get sustain node
+    *   @retval unsigned int Sustain node or -1 if none set
+    */
+    int GetSustain();
+
 private:
     void DrawGraph(wxDC& dc); //Draws the lines and nodes
     void OnPaint(wxPaintEvent &event); //Handle paint event
@@ -124,6 +142,7 @@ private:
     void OnRightDown(wxMouseEvent &event); //Handle right mosue button press
     void OnRightUp(wxMouseEvent &event); //Handle right mosue button release
     void OnRightDClick(wxMouseEvent &event); //Handle right mouse button double click
+    void OnContextClick(wxCommandEvent &event); //Handle selection within context menu
     bool IsPointInRegion(wxPoint point, wxPoint centre, unsigned int radius); //True if point is within radius of centre (actually square)
     wxPoint GetNodeCentre(wxPoint ptNode); //Get the location of a node in the display
     wxPoint GetNodeFromCentre(wxPoint ptPos); //Get the node value from its location in the display
@@ -132,6 +151,7 @@ private:
     void SendEvent(); //Send an event indicating graph has changed
 
     bool m_bAllowAddNodes = true; // True to allow adding nodes by double clicking
+    bool m_bInhibitUpdate = true; // True to inhibt sending events, e.g. when being updated from config rather than user activity
     unsigned int m_nMaxNodes; //Maximum quantity of nodes
     unsigned int m_nNodeRadius; //Radius of node
     int m_nScaleX; //Scale factor of display to X data value
@@ -150,9 +170,13 @@ private:
     wxRegion* m_pRegionDrag; //Region for permissible drag (window minus diameter of nodes
     wxColour m_colourLine; //Colour of graph lines
     wxColour m_colourNode; //Colour of graph nodes
+    wxColour m_colourSustainNode; //Colour of graph sustain nodes
+    wxColour m_colourReleaseLine; //Colour of graph release lines
     wxPoint m_ptClickOffset; //Offset of left click from center of selected node
     wxPoint m_ptExtOffset; // X offset whilst outside window
     vector<wxPoint> m_vNodes; //Table of nodes
+    int m_nSustain = -1; //!@todo Change sustain to generic 'special' points
+    int m_nSelectedNode; //Last node operated on
 
     wxStaticText* m_pLabel;
     DECLARE_EVENT_TABLE();
